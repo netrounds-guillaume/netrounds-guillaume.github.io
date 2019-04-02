@@ -2067,7 +2067,7 @@ var Graph3Module = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<dx-chart\n  (resized)=\"handleResize($event)\"\n  class=\"gridster-item-content\"\n  palette=\"Soft Pastel\"\n  [dataSource]=\"dataSource\">\n  <dxo-zoom-and-pan\n    argumentAxis=\"both\"\n  >\n  </dxo-zoom-and-pan>\n  <dxi-series\n    *ngFor=\"let serie of series\"\n    [valueField]=\"serie.value\"\n    [name]=\"serie.name\">\n  </dxi-series>\n  <dxo-common-series-settings\n    argumentField=\"timestamp\"\n    type=\"spline\"\n    hoverMode=\"includePoints\">\n    <dxo-point\n      hoverMode=\"onlyPoint\"\n      [size]=\"8\"\n    >\n    </dxo-point>\n  </dxo-common-series-settings>\n  <dxo-argument-axis\n    discreteAxisDivisionMode=\"crossLabels\"\n    [valueMarginsEnabled]=\"false\"\n    [visualRange]=\"{startValue:900, endValue:1000}\">\n    <dxo-grid [visible]=\"true\"></dxo-grid>\n  </dxo-argument-axis>\n  <dxo-scroll-bar [visible]=\"true\"></dxo-scroll-bar>\n  <dxo-legend\n    verticalAlignment=\"right\"\n    horizontalAlignment=\"top\"\n    itemTextPosition=\"right\">\n  </dxo-legend>\n  <!-- <dxo-title\n    horizontalAlignment=\"center\"\n    text=\"Top 5 test agents by response time\">\n    <dxo-subtitle text=\"(Subtitle)\">\n    </dxo-subtitle>\n  </dxo-title> -->\n  <dxo-tooltip\n    [enabled]=\"true\"\n  >\n  </dxo-tooltip>\n</dx-chart>\n"
+module.exports = "<div\n  (resized)=\"handleResize($event)\"\n  class=\"container\"\n>\n  <dx-chart\n    class=\"gridster-item-content\"\n    palette=\"Soft Pastel\"\n    [dataSource]=\"dataSource\">\n    <dxo-zoom-and-pan\n      argumentAxis=\"both\"\n    >\n    </dxo-zoom-and-pan>\n    <dxi-series\n      *ngFor=\"let serie of series\"\n      [valueField]=\"serie.value\"\n      [name]=\"serie.name\">\n    </dxi-series>\n    <dxo-common-series-settings\n      argumentField=\"timestamp\"\n      type=\"line\"\n      hoverMode=\"includePoints\">\n      <dxo-point\n        hoverMode=\"onlyPoint\"\n        [size]=\"2\"\n      >\n      </dxo-point>\n    </dxo-common-series-settings>\n    <dxo-argument-axis\n      discreteAxisDivisionMode=\"crossLabels\"\n      [valueMarginsEnabled]=\"false\"\n      [visualRange]=\"{startValue:500, endValue:1000}\">\n      <dxo-grid [visible]=\"true\"></dxo-grid>\n    </dxo-argument-axis>\n    <dxo-scroll-bar [visible]=\"true\"></dxo-scroll-bar>\n    <dxo-legend\n      verticalAlignment=\"right\"\n      horizontalAlignment=\"top\"\n      itemTextPosition=\"right\">\n    </dxo-legend>\n    <!-- <dxo-title\n      horizontalAlignment=\"center\"\n      text=\"Top 5 test agents by response time\">\n      <dxo-subtitle text=\"(Subtitle)\">\n      </dxo-subtitle>\n    </dxo-title> -->\n    <dxo-tooltip\n      [enabled]=\"true\"\n    >\n    </dxo-tooltip>\n  </dx-chart>\n\n</div>\n"
 
 /***/ }),
 
@@ -2096,7 +2096,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var devextreme_angular__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! devextreme-angular */ "./node_modules/devextreme-angular/index.js");
 /* harmony import */ var devextreme_angular__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(devextreme_angular__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var src_app_core_services_data_service__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! src/app/core/services/data.service */ "./src/app/core/services/data.service.ts");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var src_app_core_services_data_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! src/app/core/services/data.service */ "./src/app/core/services/data.service.ts");
+
 
 
 
@@ -2104,6 +2107,7 @@ __webpack_require__.r(__webpack_exports__);
 var Graph4Component = /** @class */ (function () {
     function Graph4Component(dataService) {
         this.dataService = dataService;
+        this.handleResize = Object(lodash__WEBPACK_IMPORTED_MODULE_3__["throttle"])(this.handleResize, 10).bind(this);
     }
     Graph4Component.prototype.ngOnInit = function () {
         this.dataSource = this.dataService.getCountriesInfo();
@@ -2113,7 +2117,11 @@ var Graph4Component = /** @class */ (function () {
         this.render();
     };
     Graph4Component.prototype.handleResize = function (event) {
-        this.render();
+        // this.render();
+        if (this.chart && this.chart.instance) {
+            console.log(event);
+            this.chart.instance.option('size', { height: event.newHeight, width: event.newWidth });
+        }
     };
     Graph4Component.prototype.render = function () {
         if (this.chart && this.chart.instance) {
@@ -2130,7 +2138,7 @@ var Graph4Component = /** @class */ (function () {
             template: __webpack_require__(/*! ./graph4.component.html */ "./src/app/grid/items/graph4/graph4.component.html"),
             styles: [__webpack_require__(/*! ./graph4.component.scss */ "./src/app/grid/items/graph4/graph4.component.scss")]
         }),
-        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [src_app_core_services_data_service__WEBPACK_IMPORTED_MODULE_3__["DataService"]])
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [src_app_core_services_data_service__WEBPACK_IMPORTED_MODULE_4__["DataService"]])
     ], Graph4Component);
     return Graph4Component;
 }());
