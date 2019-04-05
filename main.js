@@ -2360,7 +2360,7 @@ var Graph4Module = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div\n  (resized)=\"handleResize($event)\"\n  class=\"container\"\n>\n  <dx-chart\n    [dataSource]=\"dataSource\"\n    [rotated]=\"true\"\n    class=\"clickable-bars\"\n    (onPointClick)=\"onPointClick($event)\"\n  >\n    <dxi-series\n      argumentField=\"name\"\n      type=\"bar\"\n      valueField=\"es\"\n      color=\"#03a9f4\"\n      selectionMode=\"onlyPoint\"\n    >\n      <dxo-label\n        [visible]=\"true\"\n        position=\"outside\"\n      >\n        <dxo-format\n          type=\"percent\"\n          [precision]=\"2\"\n        >\n        </dxo-format>\n      </dxo-label>\n    </dxi-series>\n    <dxi-value-axis>\n      <dxo-title text=\"Errored Seconds\"></dxo-title>\n      <dxo-label format=\"percent\"></dxo-label>\n    </dxi-value-axis>\n    <dxo-legend [visible]=\"false\">\n    </dxo-legend>\n    <dxo-tooltip\n      [enabled]=\"true\"\n      location=\"edge\"\n    >\n    </dxo-tooltip>\n  </dx-chart>\n  <dx-context-menu\n    [dataSource]=\"contextMenuItems\"\n    [width]=\"200\"\n    visible=\"false\">\n  </dx-context-menu>\n</div>\n"
+module.exports = "<div\n  (resized)=\"handleResize($event)\"\n  class=\"container\"\n>\n  <dx-chart\n    [dataSource]=\"dataSource\"\n    [rotated]=\"true\"\n    class=\"clickable-bars\"\n    (onPointClick)=\"onPointClick($event)\"\n  >\n    <dxi-series\n      argumentField=\"name\"\n      type=\"bar\"\n      valueField=\"es\"\n      color=\"#03a9f4\"\n      selectionMode=\"onlyPoint\"\n    >\n      <dxo-label\n        [visible]=\"true\"\n        position=\"outside\"\n      >\n        <dxo-format\n          type=\"percent\"\n          [precision]=\"2\"\n        >\n        </dxo-format>\n      </dxo-label>\n    </dxi-series>\n    <dxi-value-axis>\n      <dxo-title text=\"Errored Seconds\"></dxo-title>\n      <dxo-label format=\"percent\"></dxo-label>\n    </dxi-value-axis>\n    <dxo-legend [visible]=\"false\">\n    </dxo-legend>\n    <dxo-tooltip\n      [enabled]=\"true\"\n      location=\"edge\"\n    >\n    </dxo-tooltip>\n  </dx-chart>\n  <dx-context-menu\n    [dataSource]=\"contextMenuItems\"\n    (onItemClick)=\"onContextMenuItemClick($event)\"\n  >\n  </dx-context-menu>\n</div>\n"
 
 /***/ }),
 
@@ -2394,10 +2394,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var devextreme_data_array_store__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(devextreme_data_array_store__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var devextreme_data_data_source__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! devextreme/data/data_source */ "./node_modules/devextreme/data/data_source.js");
 /* harmony import */ var devextreme_data_data_source__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(devextreme_data_data_source__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var devextreme_events__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! devextreme/events */ "./node_modules/devextreme/events.js");
-/* harmony import */ var devextreme_events__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(devextreme_events__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _graph5_service__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./graph5.service */ "./src/app/grid/items/graph5/graph5.service.ts");
-
+/* harmony import */ var _graph5_service__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./graph5.service */ "./src/app/grid/items/graph5/graph5.service.ts");
 
 
 
@@ -2407,8 +2404,57 @@ __webpack_require__.r(__webpack_exports__);
 
 var Graph5Component = /** @class */ (function () {
     function Graph5Component(graph5Service, router) {
+        var _this = this;
         this.graph5Service = graph5Service;
         this.router = router;
+        this.contextMenuItems = [];
+        this.onPointClick = function (event) {
+            // TODO: Make a DrillDownService for handling drill downs.
+            _this.router.navigate(['/dashboard'], { queryParams: { id: 'testagent', ta: event.target.data.id } });
+        };
+        this.onContextMenuItemClick = function (event) {
+            if (!_this.drillDownPoint) {
+                // log entry
+                return;
+            }
+            // TODO: Make a DrillDownService for handling drill downs.
+            _this.router.navigate(['/dashboard'], { queryParams: { id: 'testagent', ta: _this.drillDownPoint.data.id } });
+        };
+        this.getSeriesPointForDrillDown = function (event) {
+            var points = _this.chart.instance.getSeriesByPos(0).getAllPoints();
+            var candidatePoints = points.filter(function (point) { return point.isHovered(); });
+            if (candidatePoints.length !== 1) {
+                // console.warn("no series point or multiple series points were found")
+                return null;
+            }
+            return candidatePoints[0];
+        };
+        this.showContextMenu = function (event) {
+            _this.drillDownPoint = _this.getSeriesPointForDrillDown(event);
+            if (!_this.drillDownPoint) {
+                // log entry
+                return;
+            }
+            _this.contextMenuItems = [{
+                    text: _this.drillDownPoint.originalArgument + ' details',
+                    icon: 'fields'
+                }, {
+                    text: _this.drillDownPoint.originalArgument + ' details for last',
+                    icon: 'clock',
+                    items: [{
+                            text: '15 mins'
+                        }, {
+                            text: '30 mins'
+                        }, {
+                            text: '1 hour'
+                        }, {
+                            text: '6 hours'
+                        }, {
+                            text: 'day'
+                        }]
+                }];
+            _this.contextMenu.instance.show();
+        };
         // this.handleResize = debounce(this.handleResize, 10).bind(this);
         this.dataSource = new devextreme_data_data_source__WEBPACK_IMPORTED_MODULE_5___default.a({
             store: new devextreme_data_array_store__WEBPACK_IMPORTED_MODULE_4___default.a({
@@ -2417,22 +2463,11 @@ var Graph5Component = /** @class */ (function () {
             }),
             sort: function (ta) { return ta.es; }
         });
-        this.contextMenuItems = [{
-                text: 'Share',
-                icon: 'dx-icon-globe',
-                items: [
-                    { text: 'Facebook' },
-                    { text: 'Twitter' }
-                ]
-            },
-            { text: 'Download', icon: 'dx-icon-download' },
-            { text: 'Add Comment', icon: 'dx-icon-add' },
-            { text: 'Add to Favorite', icon: 'dx-icon-favorites' }
-        ];
     }
     Graph5Component.prototype.ngAfterViewInit = function () {
+        var _this = this;
         var targets = document.querySelectorAll('.clickable-bars .dxc-series rect');
-        Object(devextreme_events__WEBPACK_IMPORTED_MODULE_6__["on"])(Array.from(targets), 'dxcontextmenu', this.contextMenuHandler);
+        targets.forEach(function (target) { return target.addEventListener('contextmenu', _this.showContextMenu); });
     };
     Graph5Component.prototype.handleResize = function (event) {
         if (this.chart && this.chart.instance) {
@@ -2444,17 +2479,10 @@ var Graph5Component = /** @class */ (function () {
             this.chart.instance.render();
         }
     };
-    Graph5Component.prototype.onPointClick = function (event) {
-        this.router.navigate(['/dashboard'], { queryParams: { id: 'testagent', ta: event.target.data.id } });
-    };
-    Graph5Component.prototype.contextMenuHandler = function (event) {
-        // const points = this.chart.instance.getSeriesByPos(0).getAllPoints();
-        // const selectedPoint = points.filter(point => point.isHovered())[0];
-        // console.log(selectedPoint);
-    };
     Graph5Component.prototype.ngOnDestroy = function () {
+        var _this = this;
         var targets = document.querySelectorAll('.clickable-bars .dxc-series rect');
-        Object(devextreme_events__WEBPACK_IMPORTED_MODULE_6__["off"])(Array.from(targets), 'dxcontextmenu', this.contextMenuHandler);
+        targets.forEach(function (target) { return target.removeEventListener('contextmenu', _this.showContextMenu); });
     };
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewChild"])(devextreme_angular__WEBPACK_IMPORTED_MODULE_3__["DxChartComponent"]),
@@ -2470,7 +2498,7 @@ var Graph5Component = /** @class */ (function () {
             template: __webpack_require__(/*! ./graph5.component.html */ "./src/app/grid/items/graph5/graph5.component.html"),
             styles: [__webpack_require__(/*! ./graph5.component.scss */ "./src/app/grid/items/graph5/graph5.component.scss")]
         }),
-        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_graph5_service__WEBPACK_IMPORTED_MODULE_7__["Graph5Service"], _angular_router__WEBPACK_IMPORTED_MODULE_2__["Router"]])
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_graph5_service__WEBPACK_IMPORTED_MODULE_6__["Graph5Service"], _angular_router__WEBPACK_IMPORTED_MODULE_2__["Router"]])
     ], Graph5Component);
     return Graph5Component;
 }());
