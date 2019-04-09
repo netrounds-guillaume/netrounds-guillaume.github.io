@@ -1260,7 +1260,7 @@ var DataService = /** @class */ (function () {
         var now = Date.now();
         for (var index = 0; index < 100; index++) {
             data.push({
-                timestamp: new Date(now - index),
+                timestamp: new Date(1000 * (Math.floor(now / 1000) - index)),
                 test_agent_1: Math.floor(Math.random() * 10) + 100,
                 test_agent_2: Math.floor(Math.random() * 10) + 70,
                 test_agent_3: Math.floor(Math.random() * 10) + 50,
@@ -2216,7 +2216,7 @@ var Graph3Module = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div\n  (resized)=\"handleResize($event)\"\n  class=\"container\"\n>\n  <dx-chart\n    class=\"clickable-legend\"\n    palette=\"Soft Pastel\"\n    [dataSource]=\"dataSource\"\n    (onLegendClick)=\"onLegendClick($event)\"\n  >\n    <dxo-zoom-and-pan\n      argumentAxis=\"both\"\n      [dragToZoom]=\"true\"\n      [allowMouseWheel]=\"true\"\n      panKey=\"shift\"\n    >\n    </dxo-zoom-and-pan>\n    <dxi-series\n      *ngFor=\"let serie of series\"\n      [valueField]=\"serie.value\"\n      [name]=\"serie.name\"\n    >\n    </dxi-series>\n    <dxo-common-series-settings\n      argumentField=\"timestamp\"\n      type=\"stackedbar\"\n      hoverMode=\"includePoints\"\n    >\n      <dxo-point\n        hoverMode=\"onlyPoint\"\n        [size]=\"2\"\n      >\n      </dxo-point>\n    </dxo-common-series-settings>\n    <dxo-argument-axis\n      discreteAxisDivisionMode=\"crossLabels\"\n      [valueMarginsEnabled]=\"false\"\n    >\n      <dxo-grid [visible]=\"true\"></dxo-grid>\n      <dxo-label overlappingBehavior=\"stagger\">\n        <dxo-format type=\"dd/MM/yyyy HH:mm:ss\"></dxo-format>\n      </dxo-label>\n    </dxo-argument-axis>\n    <dxo-scroll-bar [visible]=\"true\"></dxo-scroll-bar>\n    <dxo-legend\n      verticalAlignment=\"right\"\n      horizontalAlignment=\"top\"\n      itemTextPosition=\"right\"\n    >\n    </dxo-legend>\n    <!-- <dxo-title\n      horizontalAlignment=\"center\"\n      text=\"Top 5 test agents by response time\">\n      <dxo-subtitle text=\"(Subtitle)\">\n      </dxo-subtitle>\n    </dxo-title> -->\n    <dxo-tooltip\n      [enabled]=\"true\"\n      [customizeTooltip]=\"customizeTooltip\"\n    >\n    </dxo-tooltip>\n    <dxo-export\n      [enabled]=\"true\"\n      [printingEnabled]=\"true\"\n    ></dxo-export>\n  </dx-chart>\n\n</div>\n"
+module.exports = "<div\n  (resized)=\"handleResize($event)\"\n  class=\"container\"\n>\n  <dx-chart\n    class=\"clickable-legend\"\n    [palette]=\"options.palette\"\n    [dataSource]=\"dataSource\"\n    (onLegendClick)=\"onLegendClick($event)\"\n    [argumentAxis]=\"options.argumentAxis\"\n    [legend]=\"options.legend\"\n    [tooltip]=\"options.tooltip\"\n    [export]=\"options.export\"\n    [commonSeriesSettings]=\"options.commonSeriesSettings\"\n    [series]=\"options.series\"\n    [zoomAndPan]=\"options.zoomAndPan\"\n    [scrollBar]=\"options.scrollBar\"\n  >\n  </dx-chart>\n\n</div>\n"
 
 /***/ }),
 
@@ -2256,12 +2256,86 @@ __webpack_require__.r(__webpack_exports__);
 var Graph4Component = /** @class */ (function () {
     function Graph4Component(dataService) {
         this.dataService = dataService;
-        this.handleResize = Object(lodash__WEBPACK_IMPORTED_MODULE_3__["debounce"])(this.handleResize, 100).bind(this);
-    }
-    Graph4Component.prototype.ngOnInit = function () {
+        this.customizeTooltip = function (pointInfo) {
+            return {
+                text: pointInfo.seriesName + ': ' + pointInfo.point.value
+            };
+        };
         this.dataSource = this.dataService.getCountriesInfo();
         this.series = this.dataService.getEnergySources();
-    };
+        this.handleResize = Object(lodash__WEBPACK_IMPORTED_MODULE_3__["debounce"])(this.handleResize, 100).bind(this);
+        this.options = {
+            palette: 'Soft Pastel',
+            series: this.series.map(function (serie) { return ({
+                valueField: serie.value,
+                name: serie.name
+            }); }),
+            argumentAxis: {
+                discreteAxisDivisionMode: 'crossLabels',
+                valueMarginsEnabled: false,
+                grid: {
+                    visible: true
+                },
+                label: {
+                    overlappingBehavior: 'stagger',
+                    format: 'dd/MM/yyyy HH:mm:ss'
+                }
+            },
+            commonSeriesSettings: {
+                argumentField: 'timestamp',
+                type: 'stackedbar',
+                hoverMode: 'includePoints',
+                hoverStyle: {
+                    width: 2
+                },
+                point: {
+                    hoverMode: 'onlyPoint',
+                    hoverStyle: {
+                        size: 5
+                    },
+                    size: 1
+                },
+                width: 1
+            },
+            legend: {
+                verticalAlignment: 'top',
+                horizontalAlignment: 'right',
+                itemTextPosition: 'right'
+            },
+            crosshair: {
+                enabled: true,
+                color: '#949494',
+                width: 3,
+                dashStyle: 'dot',
+                label: {
+                    visible: true,
+                    backgroundColor: '#949494',
+                    font: {
+                        color: '#fff',
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                enabled: true,
+                zIndex: 10,
+                customizeTooltip: this.customizeTooltip
+            },
+            export: {
+                enabled: true,
+                printingEnabled: true
+            },
+            zoomAndPan: {
+                argumentAxis: 'both',
+                dragToZoom: true,
+                allowMouseWheel: true,
+                panKey: 'shift'
+            },
+            scrollBar: {
+                visible: true
+            }
+        };
+    }
     Graph4Component.prototype.ngAfterViewInit = function () {
         this.render();
     };
@@ -2275,11 +2349,6 @@ var Graph4Component = /** @class */ (function () {
             this.chart.instance.render();
         }
     };
-    Graph4Component.prototype.customizeTooltip = function (args) {
-        return {
-            text: args.seriesName + ': ' + args.point.value
-        };
-    };
     Graph4Component.prototype.onLegendClick = function (event) {
         var series = event.target;
         if (series.isVisible()) {
@@ -2289,7 +2358,6 @@ var Graph4Component = /** @class */ (function () {
             series.show();
         }
     };
-    ;
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewChild"])(devextreme_angular__WEBPACK_IMPORTED_MODULE_2__["DxChartComponent"]),
         tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", devextreme_angular__WEBPACK_IMPORTED_MODULE_2__["DxChartComponent"])
@@ -2360,7 +2428,7 @@ var Graph4Module = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div\n  (resized)=\"handleResize($event)\"\n  class=\"container\"\n>\n  <dx-chart\n    [dataSource]=\"dataSource\"\n    [rotated]=\"true\"\n    class=\"clickable-bars\"\n    (onPointClick)=\"onPointClick($event)\"\n  >\n    <dxi-series\n      argumentField=\"name\"\n      type=\"bar\"\n      valueField=\"es\"\n      color=\"#03a9f4\"\n      selectionMode=\"onlyPoint\"\n    >\n      <dxo-label\n        [visible]=\"true\"\n        position=\"outside\"\n      >\n        <dxo-format\n          type=\"percent\"\n          [precision]=\"2\"\n        >\n        </dxo-format>\n      </dxo-label>\n    </dxi-series>\n    <dxi-value-axis>\n      <dxo-title text=\"Errored Seconds\"></dxo-title>\n      <dxo-label format=\"percent\"></dxo-label>\n    </dxi-value-axis>\n    <dxo-legend [visible]=\"false\">\n    </dxo-legend>\n    <dxo-tooltip\n      [enabled]=\"true\"\n      location=\"edge\"\n    >\n    </dxo-tooltip>\n  </dx-chart>\n  <dx-context-menu\n    [dataSource]=\"contextMenuItems\"\n    (onItemClick)=\"onContextMenuItemClick($event)\"\n  >\n  </dx-context-menu>\n</div>\n"
+module.exports = "<div\n  (resized)=\"handleResize($event)\"\n  class=\"container\"\n>\n  <dx-chart\n    [dataSource]=\"dataSource\"\n    [rotated]=\"true\"\n    class=\"clickable-bars\"\n    (onPointClick)=\"onPointClick($event)\"\n  >\n    <dxi-series\n      argumentField=\"name\"\n      type=\"bar\"\n      valueField=\"es\"\n      color=\"#03a9f4\"\n      selectionMode=\"onlyPoint\"\n    >\n      <dxo-label\n        [visible]=\"true\"\n        position=\"outside\"\n      >\n        <dxo-format\n          type=\"percent\"\n          [precision]=\"2\"\n        >\n        </dxo-format>\n      </dxo-label>\n    </dxi-series>\n    <dxi-value-axis>\n      <dxo-title text=\"Errored Seconds\"></dxo-title>\n      <dxo-label format=\"percent\"></dxo-label>\n    </dxi-value-axis>\n    <dxo-legend [visible]=\"false\">\n    </dxo-legend>\n    <dxo-tooltip\n      [enabled]=\"true\"\n      [zIndex]=\"10\"\n    >\n    </dxo-tooltip>\n  </dx-chart>\n  <dx-context-menu\n    [dataSource]=\"contextMenuItems\"\n    (onItemClick)=\"onContextMenuItemClick($event)\"\n    showEvent=\"null\"\n  >\n  </dx-context-menu>\n</div>\n"
 
 /***/ }),
 
@@ -2430,6 +2498,7 @@ var Graph5Component = /** @class */ (function () {
             return candidatePoints[0];
         };
         this.showContextMenu = function (event) {
+            event.preventDefault();
             _this.drillDownPoint = _this.getSeriesPointForDrillDown(event);
             if (!_this.drillDownPoint) {
                 // log entry
@@ -2453,6 +2522,7 @@ var Graph5Component = /** @class */ (function () {
                             text: 'day'
                         }]
                 }];
+            _this.contextMenu.instance.option('position', { of: window, at: 'top left', my: 'top left', offset: event.pageX + ' ' + event.pageY });
             _this.contextMenu.instance.show();
         };
         // this.handleResize = debounce(this.handleResize, 10).bind(this);
@@ -2853,7 +2923,7 @@ var MonitorsService = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<dx-data-grid\n  class=\"dataGrid\"\n  [dataSource]=\"dataSource\"\n  [showBorders]=\"false\"\n  [showColumnLines]=\"false\"\n  [allowColumnResizing]=\"true\"\n  hoverStateEnabled=\"true\"\n  columnResizingMode=\"nextColumn\"\n  (onRowClick)=\"onRowClick($event)\"\n>\n  <dxo-selection mode=\"single\"></dxo-selection>\n  <dxo-filter-row [visible]=\"true\"></dxo-filter-row>\n  <dxo-header-filter [visible]=\"true\"></dxo-header-filter>\n  <dxo-filter-panel [visible]=\"true\"></dxo-filter-panel>\n  <dxo-filter-builder-popup\n    [position]='{ of: window, at: \"top\", my: \"top\", offset: { y: 10 } }'\n  >\n  </dxo-filter-builder-popup>\n  <dxo-search-panel\n    [visible]=\"true\"\n    [width]=\"240\"\n    placeholder=\"Search...\"\n  ></dxo-search-panel>\n  <dxi-column\n    dataField=\"name\"\n    dataType=\"string\"\n    [width]=\"140\"\n    caption=\"Name\"\n    [minWidth]=\"140\"\n  >\n    <dxo-header-filter [allowSearch]=\"true\"></dxo-header-filter>\n  </dxi-column>\n  <dxi-column\n    dataField=\"es\"\n    sortOrder=\"desc\"\n    [allowSorting]=\"true\"\n    [sortingMethod]=\"sortByErrorSecond\"\n    caption=\"Errored Seconds\"\n    alignment=\"left\"\n    cellTemplate=\"esCellTemplate\"\n    headerCellTemplate=\"esHeaderCellTemplate\"\n  >\n    <dxo-header-filter [allowSearch]=\"false\"></dxo-header-filter>\n  </dxi-column>\n  <dxi-column\n    dataField=\"sla\"\n    dataType=\"number\"\n    [width]=\"120\"\n    caption=\"SLA\"\n    alignment=\"center\"\n    [allowResizing]=\"false\"\n    cellTemplate=\"slaCellTemplate\"\n  >\n    <dxo-header-filter [allowSearch]=\"true\"></dxo-header-filter>\n  </dxi-column>\n  <dxo-paging [pageSize]=\"10\"></dxo-paging>\n  <dxo-pager\n    [showPageSizeSelector]=\"true\"\n    [showNavigationButtons]=\"true\"\n    [allowedPageSizes]=\"[5, 10, 20]\"\n    [showInfo]=\"true\"\n  >\n  </dxo-pager>\n  <dxo-export [enabled]=\"true\"></dxo-export>\n  <div *dxTemplate=\"let testAgent of 'esCellTemplate'\">\n    <div>\n     <!--  <span>{{testAgent.data.es}}</span> -->\n      <dx-bullet\n        [startScaleValue]=\"0\"\n        [endScaleValue]=\"100\"\n        [value]=\"100\"\n        [showZeroLevel]=\"false\"\n        [showTarget]=\"false\"\n        color=\"#66bb6a\"\n        [size]=\"{ height: 20}\"\n      >\n        <dxo-tooltip\n          [enabled]=\"true\"\n          [customizeTooltip]=\"getESToolTip\"\n        ></dxo-tooltip>\n      </dx-bullet>\n    </div>\n  </div>\n  <div\n    *dxTemplate=\"let testAgent of 'esHeaderCellTemplate'\"\n    fxLayout=\"row\"\n    fxLayoutAlign=\"space-between center\">\n      <span>17:55:56</span>\n      <span>18:10:56</span>\n  </div>\n  <mat-icon\n    *dxTemplate=\"let sla of 'slaCellTemplate'\"\n    class=\"sla good\"\n    matTooltip=\"100%\"\n  >\n    fiber_manual_record\n  </mat-icon>\n</dx-data-grid>\n"
+module.exports = "<div\n  class=\"container\"\n  (resized)=\"handleResized($event)\"\n>\n  <dx-data-grid\n    class=\"dataGrid\"\n    [dataSource]=\"dataSource\"\n    [showBorders]=\"false\"\n    [showColumnLines]=\"false\"\n    [allowColumnResizing]=\"true\"\n    hoverStateEnabled=\"true\"\n    columnResizingMode=\"nextColumn\"\n    (onRowClick)=\"onRowClick($event)\"\n  >\n    <dxo-selection mode=\"single\"></dxo-selection>\n    <dxo-filter-row [visible]=\"true\"></dxo-filter-row>\n    <dxo-header-filter [visible]=\"true\"></dxo-header-filter>\n    <dxo-filter-panel [visible]=\"true\"></dxo-filter-panel>\n    <dxo-filter-builder-popup\n      [position]='{ of: window, at: \"top\", my: \"top\", offset: { y: 10 } }'\n    >\n    </dxo-filter-builder-popup>\n    <dxo-search-panel\n      [visible]=\"true\"\n      [width]=\"240\"\n      placeholder=\"Search...\"\n    ></dxo-search-panel>\n    <dxi-column\n      dataField=\"name\"\n      dataType=\"string\"\n      [width]=\"140\"\n      caption=\"Name\"\n      [minWidth]=\"140\"\n    >\n      <dxo-header-filter [allowSearch]=\"true\"></dxo-header-filter>\n    </dxi-column>\n    <dxi-column\n      dataField=\"es\"\n      sortOrder=\"desc\"\n      [allowSorting]=\"true\"\n      [sortingMethod]=\"sortByErrorSecond\"\n      caption=\"Errored Seconds\"\n      alignment=\"left\"\n      cellTemplate=\"esCellTemplate\"\n      headerCellTemplate=\"esHeaderCellTemplate\"\n    >\n      <dxo-header-filter [allowSearch]=\"false\"></dxo-header-filter>\n    </dxi-column>\n    <dxi-column\n      dataField=\"sla\"\n      dataType=\"number\"\n      [width]=\"120\"\n      caption=\"SLA\"\n      alignment=\"center\"\n      [allowResizing]=\"false\"\n      cellTemplate=\"slaCellTemplate\"\n    >\n      <dxo-header-filter [allowSearch]=\"true\"></dxo-header-filter>\n    </dxi-column>\n    <dxo-paging [pageSize]=\"10\"></dxo-paging>\n    <dxo-pager\n      [showPageSizeSelector]=\"true\"\n      [showNavigationButtons]=\"true\"\n      [allowedPageSizes]=\"[5, 10, 20]\"\n      [showInfo]=\"true\"\n    >\n    </dxo-pager>\n    <dxo-export [enabled]=\"true\"></dxo-export>\n    <div *dxTemplate=\"let testAgent of 'esCellTemplate'\">\n      <div>\n        <!--  <span>{{testAgent.data.es}}</span> -->\n        <dx-bullet\n          [startScaleValue]=\"0\"\n          [endScaleValue]=\"100\"\n          [value]=\"100\"\n          [showZeroLevel]=\"false\"\n          [showTarget]=\"false\"\n          color=\"#66bb6a\"\n          [size]=\"{ height: 20}\"\n        >\n          <dxo-tooltip\n            [enabled]=\"true\"\n            [customizeTooltip]=\"getESToolTip\"\n            [zIndex]=\"10\"\n          ></dxo-tooltip>\n        </dx-bullet>\n      </div>\n    </div>\n    <div\n      *dxTemplate=\"let testAgent of 'esHeaderCellTemplate'\"\n      fxLayout=\"row\"\n      fxLayoutAlign=\"space-between center\"\n    >\n      <span>17:55:56</span>\n      <span>18:10:56</span>\n    </div>\n    <mat-icon\n      *dxTemplate=\"let sla of 'slaCellTemplate'\"\n      class=\"sla good\"\n      matTooltip=\"100%\"\n    >\n      fiber_manual_record\n    </mat-icon>\n  </dx-data-grid>\n</div>\n"
 
 /***/ }),
 
@@ -2891,8 +2961,19 @@ __webpack_require__.r(__webpack_exports__);
 
 var TestAgentsComponent = /** @class */ (function () {
     function TestAgentsComponent(testAgentsService, router) {
+        var _this = this;
         this.testAgentsService = testAgentsService;
         this.router = router;
+        this.handleResized = function (event) {
+            if (!_this.bullets) {
+                return;
+            }
+            _this.bullets.forEach(function (bullet) {
+                if (bullet.instance) {
+                    bullet.instance.render();
+                }
+            });
+        };
         this.dataSource = testAgentsService.getTestAgents();
     }
     TestAgentsComponent.prototype.ngOnInit = function () {
@@ -2934,6 +3015,10 @@ var TestAgentsComponent = /** @class */ (function () {
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewChild"])(devextreme_angular__WEBPACK_IMPORTED_MODULE_3__["DxDataGridComponent"]),
         tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", devextreme_angular__WEBPACK_IMPORTED_MODULE_3__["DxDataGridComponent"])
     ], TestAgentsComponent.prototype, "dataGrid", void 0);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewChildren"])(devextreme_angular__WEBPACK_IMPORTED_MODULE_3__["DxBulletComponent"]),
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_1__["QueryList"])
+    ], TestAgentsComponent.prototype, "bullets", void 0);
     TestAgentsComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({
             selector: 'app-test-agents',
