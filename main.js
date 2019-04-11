@@ -217,7 +217,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Monitor", function() { return Monitor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DataService", function() { return DataService; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
+/* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm5/http.js");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
+
 
 
 var CountryInfo = /** @class */ (function () {
@@ -1250,7 +1252,76 @@ var tasks = [{
         monitor_id: 6
     }];
 var DataService = /** @class */ (function () {
-    function DataService() {
+    /**
+     *
+     */
+    function DataService(http) {
+        var _this = this;
+        this.http = http;
+        this.url = 'http://54.194.221.72:30175/druid/v2/';
+        this.getDruidData = function () { return tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"](_this, void 0, void 0, function () {
+            var body, httpOptions;
+            return tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"](this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        body = {
+                            queryType: 'topN',
+                            dataSource: 'top8types-all',
+                            aggregations: [
+                                {
+                                    fieldName: 'es_sum',
+                                    fieldNames: [
+                                        'es_sum'
+                                    ],
+                                    type: 'floatSum',
+                                    name: 'SUM(es_sum)'
+                                },
+                                {
+                                    fieldName: 'response_time_max_max',
+                                    fieldNames: [
+                                        'response_time_max_max'
+                                    ],
+                                    type: 'floatMax',
+                                    name: 'MAX(response_time_max_max)'
+                                }
+                            ],
+                            filter: {
+                                type: 'and',
+                                fields: [
+                                    {
+                                        type: 'selector',
+                                        dimension: 'task_type',
+                                        value: 'DNS'
+                                    },
+                                    {
+                                        type: 'selector',
+                                        dimension: 'account_id',
+                                        value: '1'
+                                    },
+                                    {
+                                        type: 'selector',
+                                        dimension: 'monitor_id',
+                                        value: '2'
+                                    }
+                                ]
+                            },
+                            granularity: 'minute',
+                            postAggregations: [],
+                            intervals: '2019-04-11T00:00:00+00:00/2019-04-14T00:00:00+00:00',
+                            threshold: 10000,
+                            metric: 'SUM(es_sum)',
+                            dimension: 'monitor_id'
+                        };
+                        httpOptions = {
+                            headers: new _angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpHeaders"]({
+                                'Content-Type': 'application/json'
+                            })
+                        };
+                        return [4 /*yield*/, this.http.post(this.url, body, httpOptions).toPromise()];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        }); };
     }
     DataService.prototype.getEnergySources = function () {
         return energySources;
@@ -1277,7 +1348,8 @@ var DataService = /** @class */ (function () {
         return tasks;
     };
     DataService = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
-        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])({ providedIn: 'root' })
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_2__["Injectable"])({ providedIn: 'root' }),
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]])
     ], DataService);
     return DataService;
 }());
@@ -2216,7 +2288,7 @@ var Graph3Module = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div\n  (resized)=\"handleResize($event)\"\n  class=\"container\"\n>\n  <dx-chart\n    class=\"clickable-legend\"\n    [palette]=\"options.palette\"\n    [dataSource]=\"dataSource\"\n    (onLegendClick)=\"onLegendClick($event)\"\n    [argumentAxis]=\"options.argumentAxis\"\n    [legend]=\"options.legend\"\n    [tooltip]=\"options.tooltip\"\n    [export]=\"options.export\"\n    [commonSeriesSettings]=\"options.commonSeriesSettings\"\n    [series]=\"options.series\"\n    [zoomAndPan]=\"options.zoomAndPan\"\n    [scrollBar]=\"options.scrollBar\"\n  >\n  </dx-chart>\n\n</div>\n"
+module.exports = "<div\n  (resized)=\"handleResize($event)\"\n  class=\"container\"\n>\n  <dx-chart\n    class=\"clickable-legend\"\n    [palette]=\"options.palette\"\n    [dataSource]=\"dataSource\"\n    (onLegendClick)=\"onLegendClick($event)\"\n    [argumentAxis]=\"options.argumentAxis\"\n    [legend]=\"options.legend\"\n    [tooltip]=\"options.tooltip\"\n    [export]=\"options.export\"\n    [commonSeriesSettings]=\"options.commonSeriesSettings\"\n    [series]=\"series\"\n    [zoomAndPan]=\"options.zoomAndPan\"\n    [scrollBar]=\"options.scrollBar\"\n  >\n  </dx-chart>\n\n</div>\n"
 
 /***/ }),
 
@@ -2256,86 +2328,120 @@ __webpack_require__.r(__webpack_exports__);
 var Graph4Component = /** @class */ (function () {
     function Graph4Component(dataService) {
         this.dataService = dataService;
+        this.options = {};
         this.customizeTooltip = function (pointInfo) {
             return {
                 text: pointInfo.seriesName + ': ' + pointInfo.point.value
             };
         };
-        this.dataSource = this.dataService.getCountriesInfo();
-        this.series = this.dataService.getEnergySources();
         this.handleResize = Object(lodash__WEBPACK_IMPORTED_MODULE_3__["debounce"])(this.handleResize, 100).bind(this);
-        this.options = {
-            palette: 'Soft Pastel',
-            series: this.series.map(function (serie) { return ({
-                valueField: serie.value,
-                name: serie.name
-            }); }),
-            argumentAxis: {
-                discreteAxisDivisionMode: 'crossLabels',
-                valueMarginsEnabled: false,
-                grid: {
-                    visible: true
-                },
-                label: {
-                    overlappingBehavior: 'stagger',
-                    format: 'dd/MM/yyyy HH:mm:ss'
-                }
-            },
-            commonSeriesSettings: {
-                argumentField: 'timestamp',
-                type: 'stackedbar',
-                hoverMode: 'includePoints',
-                hoverStyle: {
-                    width: 2
-                },
-                point: {
-                    hoverMode: 'onlyPoint',
-                    hoverStyle: {
-                        size: 5
-                    },
-                    size: 1
-                },
-                width: 1
-            },
-            legend: {
-                verticalAlignment: 'top',
-                horizontalAlignment: 'right',
-                itemTextPosition: 'right'
-            },
-            crosshair: {
-                enabled: true,
-                color: '#949494',
-                width: 3,
-                dashStyle: 'dot',
-                label: {
-                    visible: true,
-                    backgroundColor: '#949494',
-                    font: {
-                        color: '#fff',
-                        size: 12
-                    }
-                }
-            },
-            tooltip: {
-                enabled: true,
-                zIndex: 10,
-                customizeTooltip: this.customizeTooltip
-            },
-            export: {
-                enabled: true,
-                printingEnabled: true
-            },
-            zoomAndPan: {
-                argumentAxis: 'both',
-                dragToZoom: true,
-                allowMouseWheel: true,
-                panKey: 'shift'
-            },
-            scrollBar: {
-                visible: true
-            }
-        };
     }
+    Graph4Component.prototype.ngOnInit = function () {
+        return tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"](this, void 0, void 0, function () {
+            var results, dimensions, metrics, data;
+            return tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"](this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.dataService.getDruidData()];
+                    case 1:
+                        results = _a.sent();
+                        dimensions = 'monitor_id';
+                        metrics = ['SUM(es_sum)', 'MAX(response_time_max_max)'];
+                        data = results.map(function (result) {
+                            var point = {
+                                timestamp: new Date(result.timestamp)
+                            };
+                            metrics.forEach(function (metric) {
+                                point[metric] = result.result[0] ? result.result[0][metric] : null;
+                            });
+                            return point;
+                        });
+                        this.dataSource = data;
+                        this.series = metrics.map(function (metric) { return ({
+                            valueField: metric,
+                            name: metric
+                        }); });
+                        this.options = {
+                            palette: 'Soft Pastel',
+                            argumentAxis: {
+                                argumentType: 'datetime',
+                                discreteAxisDivisionMode: 'crossLabels',
+                                valueMarginsEnabled: false,
+                                grid: {
+                                    visible: true
+                                },
+                                label: {
+                                    overlappingBehavior: 'stagger',
+                                    format: 'dd/MM/yyyy HH:mm:ss'
+                                },
+                                visualRange: {
+                                    length: {
+                                        hours: 1
+                                    }
+                                },
+                                visualRangeUpdateMode: 'shift'
+                            },
+                            commonSeriesSettings: {
+                                argumentField: 'timestamp',
+                                type: 'line',
+                                hoverMode: 'includePoints',
+                                hoverStyle: {
+                                    width: 2
+                                },
+                                point: {
+                                    hoverMode: 'onlyPoint',
+                                    hoverStyle: {
+                                        size: 5
+                                    },
+                                    size: 1
+                                },
+                                width: 1
+                            },
+                            legend: {
+                                verticalAlignment: 'top',
+                                horizontalAlignment: 'right',
+                                itemTextPosition: 'right'
+                            },
+                            crosshair: {
+                                enabled: true,
+                                color: '#949494',
+                                width: 3,
+                                dashStyle: 'dot',
+                                label: {
+                                    visible: true,
+                                    backgroundColor: '#949494',
+                                    font: {
+                                        color: '#fff',
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                enabled: true,
+                                zIndex: 10,
+                                customizeTooltip: this.customizeTooltip
+                            },
+                            export: {
+                                enabled: false,
+                                printingEnabled: true
+                            },
+                            zoomAndPan: {
+                                argumentAxis: 'both',
+                                dragToZoom: true,
+                                allowMouseWheel: true,
+                                panKey: 'shift'
+                            },
+                            scrollBar: {
+                                visible: true
+                            },
+                            loadingIndicator: {
+                                show: true
+                            }
+                        };
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     Graph4Component.prototype.ngAfterViewInit = function () {
         this.render();
     };
